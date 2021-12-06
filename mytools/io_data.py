@@ -50,11 +50,11 @@ def make_data(dataType, table):
     # make text_pairs, data scope can be changed, I only include "title" here
     # number of text_pairs = Pn取2, train:n=560; test:n=421
 
-    combs = permutations(table[['ID', 'title']].values, r=2)
+    combs = permutations(table[['ID', 'text', 'keywords']].values, r=2)
     combs = pd.DataFrame([[s for s in comb] for comb in combs], columns=['text_a', 'text_b'])
     # combs[['id_text_b', 'text_b']] = combs['text_b'].to_list()
-    temp_l = pd.DataFrame(combs['text_a'].to_list(), columns = ['id_text_a', 'text_a'])
-    temp_r = pd.DataFrame(combs['text_b'].to_list(), columns = ['id_text_b', 'text_b'])
+    temp_l = pd.DataFrame(combs['text_a'].to_list(), columns = ['id_text_a', 'text_a', 'kw_text_a'])
+    temp_r = pd.DataFrame(combs['text_b'].to_list(), columns = ['id_text_b', 'text_b', 'kw_text_b'])
     combs = pd.concat([temp_l, temp_r], axis=1)
     
 
@@ -63,14 +63,14 @@ def make_data(dataType, table):
         labels = pd.read_csv('TrainLabel.csv')
         pairs = set()
         for _, row in labels.iterrows():
-            temp = frozenset([row['Test'], row['Reference']])
+            temp = (row['Test'], row['Reference'])
             if temp not in pairs:
                 pairs.add(temp)
 
         # mark label on text_pairs
         combs['label'] = 'unlike'
         for ind, row in combs.iterrows():
-            if {row['id_text_a'], row['id_text_b']} in pairs:
+            if (row['id_text_a'], row['id_text_b']) in pairs:
                 combs.at[ind, 'label'] = 'like'
 
     
